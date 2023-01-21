@@ -1,10 +1,20 @@
+import { Offer } from 'src/offers/entities/offer.entity';
 import { User } from 'src/users/entities/user.entity';
-import { IsDate, IsString, Min, Max, IsUrl, IsNumber, IsInt } from 'class-validator';
+import {
+  IsDate,
+  IsString,
+  Min,
+  Max,
+  IsUrl,
+  IsNumber,
+  IsInt,
+} from 'class-validator';
 import {
   Column,
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -13,6 +23,14 @@ import {
 export class Wish {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @CreateDateColumn()
+  @IsDate()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  @IsDate()
+  updatedAt: Date;
 
   @Column()
   @IsString()
@@ -52,17 +70,10 @@ export class Wish {
   @ManyToOne(() => User, (user) => user.wishes)
   owner: User;
 
+  @OneToMany(() => Offer, (offer) => offer.item)
   offers: [];
 
   @Column({ default: 0 })
   @IsInt()
   copied: number;
-
-  @CreateDateColumn()
-  @IsDate()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  @IsDate()
-  updatedAt: Date;
 }

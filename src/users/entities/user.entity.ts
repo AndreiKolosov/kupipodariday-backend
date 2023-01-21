@@ -1,4 +1,6 @@
-import { IsString, Min, Max, IsEmail, IsUrl, IsDate } from 'class-validator';
+import { Offer } from 'src/offers/entities/offer.entity';
+import { Wishlist } from 'src/wishlists/entities/wishlist.entity';
+import { IsString, Length, IsEmail, IsUrl, IsDate } from 'class-validator';
 import {
   Column,
   CreateDateColumn,
@@ -18,16 +20,26 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ unique: true })
+  @CreateDateColumn()
+  @IsDate()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  @IsDate()
+  updatedAt: Date;
+
+  @Column({
+    type: 'varchar',
+    unique: true,
+    length: 30,
+  })
   @IsString()
-  @Min(2)
-  @Max(30)
+  @Length(2, 30)
   username: string;
 
-  @Column({ default: ABOUT_DEFAULT_TEXT })
+  @Column({ type: 'varchar', length: 200, default: ABOUT_DEFAULT_TEXT })
   @IsString()
-  @Min(2)
-  @Max(200)
+  @Length(2, 200)
   about: string;
 
   @Column({ default: AVATAR_DEFAULT_LINK })
@@ -43,17 +55,11 @@ export class User {
   password: string;
 
   @OneToMany(() => Wish, (wish) => wish.owner)
-  wishes: [];
+  wishes: Wish[];
 
-  offers: [];
+  @OneToMany(() => Offer, (offer) => offer.user)
+  offers: Offer[];
 
-  wishlists: [];
-
-  @CreateDateColumn()
-  @IsDate()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  @IsDate()
-  updatedAt: Date;
+  @OneToMany(() => Wishlist, (wishlist) => wishlist)
+  wishlists: Wishlist[];
 }

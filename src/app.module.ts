@@ -1,3 +1,5 @@
+import { AuthModule } from './auth/auth.module';
+import { HashModule } from './hash/hash.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
@@ -20,6 +22,8 @@ import { createPostgresConfig } from './configurations/postgres.config';
     WishesModule,
     WishlistsModule,
     OffersModule,
+    AuthModule,
+    HashModule,
   ],
   controllers: [AppController],
   providers: [],
