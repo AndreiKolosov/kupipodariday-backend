@@ -1,10 +1,12 @@
+import { NotFoundException } from '@nestjs/common/exceptions';
 import { HashService } from './../hash/hash.service';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
+import { Wish } from 'src/wishes/entities/wish.entity';
 
 @Injectable()
 export class UsersService {
@@ -37,11 +39,61 @@ export class UsersService {
     return await this.usersRepository.findOneBy({ id });
   }
 
-  async update(id: number, dto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async deleteById(id: number): Promise<DeleteResult> {
+    return this.usersRepository.delete(id);
   }
 
-  async remove(id: number) {
-    return `This action removes a #${id} user`;
+  async updateById(id: number, dto: UpdateUserDto): Promise<User> {
+    const user = await this.findById(id);
+
+    if (dto.email && dto.email !== user.email) {
+      const foundedUserByEmail = await this.findByEmail(dto.email);
+      if (foundedUserByEmail) {
+        throw new BadRequestException('Такой пользователь уже существует');
+      }
+    }
+
+    if (dto.username && dto.username !== user.username) {
+      const foundedUserByUsername = await this.findByUsername(dto.username);
+      if (foundedUserByUsername) {
+        throw new BadRequestException('Такой пользователь уже существует');
+      }
+    }
+
+    if (dto.password) {
+      dto.password = await this.hashService.hash(dto.password);
+    }
+
+    await this.usersRepository.update(id, dto);
+
+    return await this.findById(id);
+  }
+
+  async getUserWishes(username: string): Promise<Wish[]> {
+    const user = await this.findByUsername(username);
+
+    if (!user) {
+      throw new NotFoundException('Пользователя с таким именем не существует');
+    }
+
+    const { id } = user;
+    const { wishes } = await this.usersRepository.findOne({
+      where: { id },
+      select: ['wishes'],
+      relations: ['wishes', 'wishes.owner', 'wishes.offers'],
+    });
+
+    for (const wish of wishes) {
+      delete wish.owner.password;
+      delete wish.owner.email;
+    }
+
+    return wishes;
+  }
+
+  async findUser(query: string): Promise<User> {
+    return await this.usersRepository.findOne({
+      where: [{ username: query }, { email: query }],
+    });
   }
 }
