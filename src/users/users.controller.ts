@@ -72,15 +72,17 @@ export class UsersController {
   }
 
   @Post('find')
-  async findUser(@Body('query') query: string): Promise<User> {
-    const user = await this.usersService.findUser(query);
+  async findUsers(@Body('query') query: string): Promise<User[]> {
+    const users = await this.usersService.findMany(query);
 
-    if (!user) {
-      throw new NotFoundException('Пользователь не найден');
+    if (!users) {
+      throw new NotFoundException(
+        'Пользователи по заданным параметрам не найдены',
+      );
     }
 
-    delete user.password;
+    // delete user.password;
 
-    return user;
+    return users;
   }
 }

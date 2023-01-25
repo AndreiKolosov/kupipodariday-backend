@@ -2,7 +2,7 @@ import { NotFoundException } from '@nestjs/common/exceptions';
 import { HashService } from './../hash/hash.service';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeleteResult, Repository } from 'typeorm';
+import { Any, DeleteResult, Equal, Like, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
@@ -91,9 +91,9 @@ export class UsersService {
     return wishes;
   }
 
-  async findUser(query: string): Promise<User> {
-    return await this.usersRepository.findOne({
-      where: [{ username: query }, { email: query }],
+  async findMany(query: string): Promise<User[]> {
+    return await this.usersRepository.find({
+      where: [{ username: Like(`${query}%`) }, { email: Like(`${query}%`) }],
     });
   }
 }
