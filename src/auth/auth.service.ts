@@ -1,9 +1,9 @@
-import { NotFoundException } from '@nestjs/common/exceptions';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { HashService } from 'src/hash/hash.service';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { JwtService } from '@nestjs/jwt';
+import { INCORRECT_USERNAME_OR_PASSWORD } from 'src/utils/constants/auth';
 
 @Injectable()
 export class AuthService {
@@ -22,7 +22,7 @@ export class AuthService {
   async validatePassword(username: string, password: string): Promise<User> {
     const user = await this.usersService.findByUsername(username);
     if (!user) {
-      throw new NotFoundException('Пользователя с таким именем не существует');
+      throw new UnauthorizedException(INCORRECT_USERNAME_OR_PASSWORD);
     }
 
     const isPasswordCorrect: boolean = await this.hashService.compare(
@@ -31,9 +31,7 @@ export class AuthService {
     );
 
     if (!isPasswordCorrect) {
-      throw new UnauthorizedException(
-        'Неправельный пароль или имя пользователя',
-      );
+      throw new UnauthorizedException(INCORRECT_USERNAME_OR_PASSWORD);
     }
 
     delete user.password;

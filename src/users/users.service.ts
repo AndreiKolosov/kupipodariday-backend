@@ -2,11 +2,15 @@ import { NotFoundException } from '@nestjs/common/exceptions';
 import { HashService } from './../hash/hash.service';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Any, DeleteResult, Equal, Like, Repository } from 'typeorm';
+import { DeleteResult, Like, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { Wish } from 'src/wishes/entities/wish.entity';
+import {
+  USER_ALREADY_EXIST,
+  USER_DOES_NOT_EXIST,
+} from 'src/utils/constants/users';
 
 @Injectable()
 export class UsersService {
@@ -24,15 +28,21 @@ export class UsersService {
   }
 
   async findAll(): Promise<User[]> {
-    return this.usersRepository.find();
+    const users = await this.usersRepository.find();
+
+    for (const user of users) {
+      delete user.password;
+    }
+
+    return users;
   }
 
   async findByUsername(username: string): Promise<User> {
-    return this.usersRepository.findOneBy({ username });
+    return await this.usersRepository.findOneBy({ username });
   }
 
   async findByEmail(email: string): Promise<User> {
-    return this.usersRepository.findOneBy({ email });
+    return await this.usersRepository.findOneBy({ email });
   }
 
   async findById(id: number): Promise<User> {
@@ -40,7 +50,7 @@ export class UsersService {
   }
 
   async deleteById(id: number): Promise<DeleteResult> {
-    return this.usersRepository.delete(id);
+    return await this.usersRepository.delete(id);
   }
 
   async updateById(id: number, dto: UpdateUserDto): Promise<User> {
@@ -49,14 +59,14 @@ export class UsersService {
     if (dto.email && dto.email !== user.email) {
       const foundedUserByEmail = await this.findByEmail(dto.email);
       if (foundedUserByEmail) {
-        throw new BadRequestException('Такой пользователь уже существует');
+        throw new BadRequestException(USER_ALREADY_EXIST);
       }
     }
 
     if (dto.username && dto.username !== user.username) {
       const foundedUserByUsername = await this.findByUsername(dto.username);
       if (foundedUserByUsername) {
-        throw new BadRequestException('Такой пользователь уже существует');
+        throw new BadRequestException(USER_ALREADY_EXIST);
       }
     }
 
@@ -66,14 +76,16 @@ export class UsersService {
 
     await this.usersRepository.update(id, dto);
 
-    return await this.findById(id);
+    const updatedUser = await this.findById(id);
+
+    return updatedUser;
   }
 
   async getUserWishes(username: string): Promise<Wish[]> {
     const user = await this.findByUsername(username);
 
     if (!user) {
-      throw new NotFoundException('Пользователя с таким именем не существует');
+      throw new NotFoundException(USER_DOES_NOT_EXIST);
     }
 
     const { id } = user;
@@ -92,8 +104,14 @@ export class UsersService {
   }
 
   async findMany(query: string): Promise<User[]> {
-    return await this.usersRepository.find({
+    const users = await this.usersRepository.find({
       where: [{ username: Like(`${query}%`) }, { email: Like(`${query}%`) }],
     });
+
+    for (const user of users) {
+      delete user.password;
+    }
+
+    return users;
   }
 }

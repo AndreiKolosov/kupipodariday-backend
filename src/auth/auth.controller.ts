@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { UsersService } from 'src/users/users.service';
+import { USER_ALREADY_EXIST } from 'src/utils/constants/users';
 import { AuthService } from './auth.service';
 import { LocalGuard } from './guards/local.guard';
 
@@ -23,18 +24,20 @@ export class AuthController {
   async signin(@Req() { user }): Promise<{
     access_token: string;
   }> {
-    return await this.authService.auth(user);
+    return this.authService.auth(user);
   }
 
   @Post('signup')
   async signup(@Body() dto: CreateUserDto) {
     const { email } = dto;
+
     const userInDB = await this.usersService.findByEmail(email);
 
     if (userInDB) {
-      throw new BadRequestException();
+      throw new BadRequestException(USER_ALREADY_EXIST);
     }
+
     const user = await this.usersService.create(dto);
-    return await this.authService.auth(user);
+    return this.authService.auth(user);
   }
 }

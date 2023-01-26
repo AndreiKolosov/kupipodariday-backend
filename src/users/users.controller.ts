@@ -6,6 +6,9 @@ import { User } from './entities/user.entity';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { UseGuards } from '@nestjs/common/decorators';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
+import { PublicUserProfileDto } from './dto/public-user-profile.dto';
+import { ProfileUserDto } from './dto/profile-user.dto';
+import { USER_DOES_NOT_EXIST } from 'src/utils/constants/users';
 
 @UseGuards(JwtGuard)
 @Controller('users')
@@ -14,37 +17,28 @@ export class UsersController {
 
   @Get()
   async findAll(): Promise<User[]> {
-    const users = await this.usersService.findAll();
-    const preparedUsers = users.map((user) => {
-      delete user.password;
-      return user;
-    });
-
-    return preparedUsers;
+    return await this.usersService.findAll();
   }
 
   @Get('me')
-  async getAuthUser(@Req() { user }: { user: User }): Promise<User> {
-    const userData = await this.usersService.findById(user.id);
-    if (!userData) {
+  async getAuthUser(@Req() { user }: { user: User }): Promise<ProfileUserDto> {
+    const userProfileData = await this.usersService.findById(user.id);
+
+    if (!userProfileData) {
       throw new NotFoundException();
     }
 
-    delete userData.password;
-
-    return userData;
+    return ProfileUserDto.getProfile(userProfileData);
   }
 
   @Patch('me')
   async updateAuthUser(
     @Req() { user }: { user: User },
     @Body() dto: UpdateUserDto,
-  ): Promise<User> {
+  ): Promise<ProfileUserDto> {
     const updatedUser = await this.usersService.updateById(user.id, dto);
 
-    delete updatedUser.password;
-
-    return updatedUser;
+    return ProfileUserDto.getProfile(updatedUser);
   }
 
   @Get('me/wishes')
@@ -53,17 +47,16 @@ export class UsersController {
   }
 
   @Get(':username')
-  async getUserByUsername(@Param('username') username: string): Promise<User> {
+  async getUserByUsername(
+    @Param('username') username: string,
+  ): Promise<PublicUserProfileDto> {
     const user = await this.usersService.findByUsername(username);
 
     if (!user) {
-      throw new NotFoundException('Пользователь с таким именем не существует');
+      throw new NotFoundException(USER_DOES_NOT_EXIST);
     }
 
-    delete user.password;
-    delete user.email;
-
-    return user;
+    return PublicUserProfileDto.getProfile(user);
   }
 
   @Get(':username/wishes')
@@ -73,16 +66,6 @@ export class UsersController {
 
   @Post('find')
   async findUsers(@Body('query') query: string): Promise<User[]> {
-    const users = await this.usersService.findMany(query);
-
-    if (!users) {
-      throw new NotFoundException(
-        'Пользователи по заданным параметрам не найдены',
-      );
-    }
-
-    // delete user.password;
-
-    return users;
+    return await this.usersService.findMany(query);
   }
 }
