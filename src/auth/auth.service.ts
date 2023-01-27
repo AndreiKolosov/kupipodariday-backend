@@ -34,8 +34,6 @@ export class AuthService {
       throw new UnauthorizedException(INCORRECT_USERNAME_OR_PASSWORD);
     }
 
-    delete user.password;
-
     return user;
   }
 }

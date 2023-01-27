@@ -1,17 +1,28 @@
+import { TransformPublicUserInterceptor } from './../interceptors/transform-public-user-interceptor';
+import { TransformWishOwnerInterceptor } from './../interceptors/transform-wish-owner-interceptor';
+import { User } from 'src/users/entities/user.entity';
+import { TransformPrivetUserInterceptor } from '../interceptors/transform-privet-user-interceptor';
 import { Wish } from './../wishes/entities/wish.entity';
-import { Controller, Get, Body, Patch, Req, Param, Post } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Body,
+  Patch,
+  Req,
+  Param,
+  Post,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from './entities/user.entity';
 import { NotFoundException } from '@nestjs/common/exceptions';
-import { UseGuards } from '@nestjs/common/decorators';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
-import { PublicUserProfileDto } from './dto/public-user-profile.dto';
-import { ProfileUserDto } from './dto/profile-user.dto';
 import { USER_DOES_NOT_EXIST } from 'src/utils/constants/users';
 
-@UseGuards(JwtGuard)
 @Controller('users')
+@UseGuards(JwtGuard)
+@UseInterceptors(TransformPrivetUserInterceptor)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
@@ -21,45 +32,44 @@ export class UsersController {
   }
 
   @Get('me')
-  async getAuthUser(@Req() { user }: { user: User }): Promise<ProfileUserDto> {
+  async getAuthUser(@Req() { user }: { user: User }): Promise<User> {
     const userProfileData = await this.usersService.findById(user.id);
 
     if (!userProfileData) {
       throw new NotFoundException();
     }
 
-    return ProfileUserDto.getProfile(userProfileData);
+    return userProfileData;
   }
 
   @Patch('me')
   async updateAuthUser(
     @Req() { user }: { user: User },
     @Body() dto: UpdateUserDto,
-  ): Promise<ProfileUserDto> {
-    const updatedUser = await this.usersService.updateById(user.id, dto);
-
-    return ProfileUserDto.getProfile(updatedUser);
+  ): Promise<User> {
+    return await this.usersService.updateById(user.id, dto);
   }
 
   @Get('me/wishes')
-  async getAuthUserWishes(@Req() { user }: { user: User }) {
+  @UseInterceptors(TransformWishOwnerInterceptor)
+  async getAuthUserWishes(@Req() { user }: { user: User }): Promise<Wish[]> {
     return await this.usersService.getUserWishes(user.username);
   }
 
   @Get(':username')
-  async getUserByUsername(
-    @Param('username') username: string,
-  ): Promise<PublicUserProfileDto> {
+  @UseInterceptors(TransformPublicUserInterceptor)
+  async getUserByUsername(@Param('username') username: string): Promise<User> {
     const user = await this.usersService.findByUsername(username);
 
     if (!user) {
       throw new NotFoundException(USER_DOES_NOT_EXIST);
     }
 
-    return PublicUserProfileDto.getProfile(user);
+    return user;
   }
 
   @Get(':username/wishes')
+  @UseInterceptors(TransformWishOwnerInterceptor)
   async getUserWishes(@Param('username') username: string): Promise<Wish[]> {
     return await this.usersService.getUserWishes(username);
   }

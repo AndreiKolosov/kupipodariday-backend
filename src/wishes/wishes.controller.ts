@@ -1,34 +1,42 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { TransformWishOwnerInterceptor } from '../interceptors/transform-wish-owner-interceptor';
+import {
+  Controller,
+  Get,
+  Post,
+  Req,
+  Body,
+  UseInterceptors,
+  UseGuards,
+} from '@nestjs/common';
 import { WishesService } from './wishes.service';
 import { CreateWishDto } from './dto/create-wish.dto';
 import { UpdateWishDto } from './dto/update-wish.dto';
+import { Wish } from './entities/wish.entity';
+import { JwtGuard } from 'src/auth/guards/jwt.guard';
+import { User } from 'src/users/entities/user.entity';
 
 @Controller('wishes')
+@UseInterceptors(TransformWishOwnerInterceptor)
 export class WishesController {
   constructor(private readonly wishesService: WishesService) {}
 
+  @UseGuards(JwtGuard)
   @Post()
-  create(@Body() createWishDto: CreateWishDto) {
-    return this.wishesService.create(createWishDto);
+  async createWish(
+    @Req() req: { user: User },
+    @Body() dto: CreateWishDto,
+  ): Promise<void> {
+    return await this.wishesService.createWish(dto, req.user.id);
   }
 
+  @UseGuards(JwtGuard)
   @Get()
-  findAll() {
-    return this.wishesService.findAll();
+  async findAllWishes(): Promise<Wish[]> {
+    return await this.wishesService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.wishesService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateWishDto: UpdateWishDto) {
-    return this.wishesService.update(+id, updateWishDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.wishesService.remove(+id);
+  @Get('last')
+  async getLastWishes(): Promise<Wish[]> {
+    return await this.wishesService.getLastWishes();
   }
 }

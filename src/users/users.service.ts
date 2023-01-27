@@ -30,10 +30,6 @@ export class UsersService {
   async findAll(): Promise<User[]> {
     const users = await this.usersRepository.find();
 
-    for (const user of users) {
-      delete user.password;
-    }
-
     return users;
   }
 
@@ -95,23 +91,12 @@ export class UsersService {
       relations: ['wishes', 'wishes.owner', 'wishes.offers'],
     });
 
-    for (const wish of wishes) {
-      delete wish.owner.password;
-      delete wish.owner.email;
-    }
-
     return wishes;
   }
 
   async findMany(query: string): Promise<User[]> {
-    const users = await this.usersRepository.find({
+    return await this.usersRepository.find({
       where: [{ username: Like(`${query}%`) }, { email: Like(`${query}%`) }],
     });
-
-    for (const user of users) {
-      delete user.password;
-    }
-
-    return users;
   }
 }
