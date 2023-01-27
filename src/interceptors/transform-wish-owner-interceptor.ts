@@ -14,22 +14,19 @@ export class TransformWishOwnerInterceptor implements NestInterceptor {
     next: CallHandler,
   ): Observable<any> | Promise<Observable<any>> {
     return next.handle().pipe(
-      map((wishes: Wish[]) => {
-        return wishes.map((wish: Wish) => {
-          const { id, username, avatar, about, createdAt, updatedAt } =
-            wish.owner;
-          return {
-            ...wish,
-            owner: {
-              id,
-              username,
-              avatar,
-              about,
-              createdAt,
-              updatedAt,
-            },
-          };
-        });
+      map((wishesData: Wish | Wish[] | undefined) => {
+        if (wishesData === undefined) return;
+
+        if (Array.isArray(wishesData)) {
+          for (const wish of wishesData) {
+            delete wish.owner.email;
+            delete wish.owner.password;
+          }
+        } else {
+          delete wishesData.owner.email;
+          delete wishesData.owner.password;
+        }
+        return wishesData;
       }),
     );
   }

@@ -3,8 +3,11 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
+  Delete,
   Req,
   Body,
+  Param,
   UseInterceptors,
   UseGuards,
 } from '@nestjs/common';
@@ -38,5 +41,35 @@ export class WishesController {
   @Get('last')
   async getLastWishes(): Promise<Wish[]> {
     return await this.wishesService.getLastWishes();
+  }
+
+  @Get('top')
+  async getTopWishes(): Promise<Wish[]> {
+    return await this.wishesService.getTopWishes();
+  }
+
+  @UseGuards(JwtGuard)
+  @Get(':id')
+  async getWishById(@Param('id') id: string): Promise<Wish> {
+    return await this.wishesService.findById(Number(id));
+  }
+
+  @UseGuards(JwtGuard)
+  @Patch(':id')
+  async updateWish(
+    @Req() { user }: { user: User },
+    @Param('id') id: string,
+    @Body() dto: UpdateWishDto,
+  ): Promise<void> {
+    await this.wishesService.updateWish(Number(id), dto, user.id);
+  }
+
+  @UseGuards(JwtGuard)
+  @Delete(':id')
+  async deleteWish(
+    @Req() { user }: { user: User },
+    @Param('id') id: string,
+  ): Promise<Wish> {
+    return await this.wishesService.deleteById(Number(id), user.id);
   }
 }

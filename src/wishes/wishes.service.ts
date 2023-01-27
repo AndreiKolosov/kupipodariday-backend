@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common/exceptions';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsersService } from 'src/users/users.service';
 import { Repository } from 'typeorm';
@@ -38,5 +39,59 @@ export class WishesService {
     });
 
     return lastWishes;
+  }
+
+  async getTopWishes(): Promise<Wish[]> {
+    return await this.wishesRepository.find({
+      take: 10,
+      order: { copied: 'desc' },
+      relations: ['owner', 'offers'],
+    });
+  }
+
+  async findById(id: number): Promise<Wish> {
+    const wish = await this.wishesRepository.findOne({
+      where: { id },
+      relations: ['owner', 'offers'],
+    });
+
+    if (!wish) {
+      throw new NotFoundException('По запросу ничего не найдено');
+    }
+
+    return wish;
+  }
+
+  async updateWish(
+    wishId: number,
+    dto: UpdateWishDto,
+    userId: number,
+  ): Promise<void> {
+    const wish = await this.findById(wishId);
+
+    if (!wish) {
+      throw new NotFoundException('По запросу ничего не найдено');
+    }
+
+    if (wish.owner.id !== userId) {
+      throw new BadRequestException('Вы не можете изменять чужие подарки');
+    }
+
+    await this.wishesRepository.update(wishId, dto);
+  }
+
+  async deleteById(wishId: number, userId: number): Promise<Wish> {
+    const wish = await this.findById(wishId);
+    if (!wish) {
+      throw new NotFoundException('По запросу ничего не найдено');
+    }
+
+    if (wish.owner.id !== userId) {
+      throw new BadRequestException('Вы не можете изменять чужие подарки');
+    }
+
+    await this.wishesRepository.delete(wishId);
+
+    return wish;
   }
 }

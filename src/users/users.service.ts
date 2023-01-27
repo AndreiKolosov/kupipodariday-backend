@@ -2,7 +2,7 @@ import { NotFoundException } from '@nestjs/common/exceptions';
 import { HashService } from './../hash/hash.service';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeleteResult, Like, Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
@@ -43,10 +43,6 @@ export class UsersService {
 
   async findById(id: number): Promise<User> {
     return await this.usersRepository.findOneBy({ id });
-  }
-
-  async deleteById(id: number): Promise<DeleteResult> {
-    return await this.usersRepository.delete(id);
   }
 
   async updateById(id: number, dto: UpdateUserDto): Promise<User> {
