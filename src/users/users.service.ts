@@ -17,6 +17,8 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
+    @InjectRepository(Wish)
+    private readonly wishesRepository: Repository<Wish>,
     private readonly hashService: HashService,
   ) {}
 
@@ -73,21 +75,11 @@ export class UsersService {
     return updatedUser;
   }
 
-  async getUserWishes(username: string): Promise<Wish[]> {
-    const user = await this.findByUsername(username);
-
-    if (!user) {
-      throw new NotFoundException(USER_DOES_NOT_EXIST);
-    }
-
-    const { id } = user;
-    const { wishes } = await this.usersRepository.findOne({
-      where: { id },
-      select: ['wishes'],
-      relations: ['wishes', 'wishes.owner', 'wishes.offers'],
+  async getUserWishes(id: number): Promise<Wish[]> {
+    return this.wishesRepository.find({
+      where: { owner: { id } },
+      relations: ['owner', 'offers'],
     });
-
-    return wishes;
   }
 
   async findMany(query: string): Promise<User[]> {

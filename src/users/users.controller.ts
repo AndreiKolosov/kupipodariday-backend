@@ -53,7 +53,7 @@ export class UsersController {
   @Get('me/wishes')
   @UseInterceptors(TransformWishOwnerInterceptor)
   async getAuthUserWishes(@Req() { user }: { user: User }): Promise<Wish[]> {
-    return await this.usersService.getUserWishes(user.username);
+    return await this.usersService.getUserWishes(Number(user.id));
   }
 
   @Get(':username')
@@ -71,7 +71,13 @@ export class UsersController {
   @Get(':username/wishes')
   @UseInterceptors(TransformWishOwnerInterceptor)
   async getUserWishes(@Param('username') username: string): Promise<Wish[]> {
-    return await this.usersService.getUserWishes(username);
+    const user = await this.usersService.findByUsername(username);
+
+    if (!user) {
+      throw new NotFoundException(USER_DOES_NOT_EXIST);
+    }
+
+    return await this.usersService.getUserWishes(Number(user.id));
   }
 
   @Post('find')

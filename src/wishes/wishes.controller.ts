@@ -19,7 +19,6 @@ import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { User } from 'src/users/entities/user.entity';
 
 @Controller('wishes')
-@UseInterceptors(TransformWishOwnerInterceptor)
 export class WishesController {
   constructor(private readonly wishesService: WishesService) {}
 
@@ -28,48 +27,61 @@ export class WishesController {
   async createWish(
     @Req() req: { user: User },
     @Body() dto: CreateWishDto,
-  ): Promise<void> {
+  ): Promise<Record<string, never>> {
     return await this.wishesService.createWish(dto, req.user.id);
   }
 
-  @UseGuards(JwtGuard)
   @Get()
+  @UseGuards(JwtGuard)
   async findAllWishes(): Promise<Wish[]> {
     return await this.wishesService.findAll();
   }
 
   @Get('last')
+  @UseInterceptors(TransformWishOwnerInterceptor)
   async getLastWishes(): Promise<Wish[]> {
     return await this.wishesService.getLastWishes();
   }
 
   @Get('top')
+  @UseInterceptors(TransformWishOwnerInterceptor)
   async getTopWishes(): Promise<Wish[]> {
     return await this.wishesService.getTopWishes();
   }
 
-  @UseGuards(JwtGuard)
   @Get(':id')
+  @UseGuards(JwtGuard)
+  @UseInterceptors(TransformWishOwnerInterceptor)
   async getWishById(@Param('id') id: string): Promise<Wish> {
     return await this.wishesService.findById(Number(id));
   }
 
-  @UseGuards(JwtGuard)
   @Patch(':id')
+  @UseGuards(JwtGuard)
   async updateWish(
     @Req() { user }: { user: User },
     @Param('id') id: string,
     @Body() dto: UpdateWishDto,
-  ): Promise<void> {
-    await this.wishesService.updateWish(Number(id), dto, user.id);
+  ): Promise<Record<string, never>> {
+    return await this.wishesService.updateWish(Number(id), dto, user.id);
   }
 
-  @UseGuards(JwtGuard)
   @Delete(':id')
+  @UseGuards(JwtGuard)
+  @UseInterceptors(TransformWishOwnerInterceptor)
   async deleteWish(
     @Req() { user }: { user: User },
     @Param('id') id: string,
   ): Promise<Wish> {
     return await this.wishesService.deleteById(Number(id), user.id);
+  }
+
+  @Post(':id/copy')
+  @UseGuards(JwtGuard)
+  async copyWish(
+    @Req() { user }: { user: User },
+    @Param('id') id: string,
+  ): Promise<Record<string, never>> {
+    return await this.wishesService.copyWish(Number(id), user.id);
   }
 }

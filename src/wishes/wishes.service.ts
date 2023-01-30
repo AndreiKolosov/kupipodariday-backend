@@ -6,6 +6,12 @@ import { Repository } from 'typeorm';
 import { CreateWishDto } from './dto/create-wish.dto';
 import { UpdateWishDto } from './dto/update-wish.dto';
 import { Wish } from './entities/wish.entity';
+import { USER_DOES_NOT_EXIST } from 'src/utils/constants/users';
+import {
+  RAISED_NOT_NULL,
+  USER_NOT_OWNER,
+  WISH_NOT_FOUND,
+} from 'src/utils/constants/wishes';
 
 @Injectable()
 export class WishesService {
@@ -23,12 +29,17 @@ export class WishesService {
     return wishes;
   }
 
-  async createWish(dto: CreateWishDto, ownerId: number): Promise<void> {
+  async createWish(
+    dto: CreateWishDto,
+    ownerId: number,
+  ): Promise<Record<string, never>> {
     const user = await this.usersService.findById(ownerId);
     await this.wishesRepository.save({
       ...dto,
       owner: user,
     });
+
+    return {};
   }
 
   async getLastWishes(): Promise<Wish[]> {
@@ -66,32 +77,73 @@ export class WishesService {
     wishId: number,
     dto: UpdateWishDto,
     userId: number,
-  ): Promise<void> {
+  ): Promise<Record<string, never>> {
     const wish = await this.findById(wishId);
 
     if (!wish) {
-      throw new NotFoundException('По запросу ничего не найдено');
+      throw new NotFoundException(WISH_NOT_FOUND);
+    }
+
+    if (wish.raised) {
+      throw new BadRequestException(RAISED_NOT_NULL);
     }
 
     if (wish.owner.id !== userId) {
-      throw new BadRequestException('Вы не можете изменять чужие подарки');
+      throw new BadRequestException(USER_NOT_OWNER);
     }
 
     await this.wishesRepository.update(wishId, dto);
+
+    return {};
   }
 
   async deleteById(wishId: number, userId: number): Promise<Wish> {
     const wish = await this.findById(wishId);
     if (!wish) {
-      throw new NotFoundException('По запросу ничего не найдено');
+      throw new NotFoundException(WISH_NOT_FOUND);
     }
 
     if (wish.owner.id !== userId) {
-      throw new BadRequestException('Вы не можете изменять чужие подарки');
+      throw new BadRequestException(USER_NOT_OWNER);
     }
 
     await this.wishesRepository.delete(wishId);
 
     return wish;
+  }
+
+  async copyWish(
+    wishId: number,
+    userId: number,
+  ): Promise<Record<string, never>> {
+    const wish = await this.wishesRepository.findOneBy({ id: wishId });
+
+    if (!wish) {
+      throw new NotFoundException(WISH_NOT_FOUND);
+    }
+
+    const user = await this.usersService.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException(USER_DOES_NOT_EXIST);
+    }
+
+    delete wish.id;
+    delete wish.createdAt;
+    delete wish.updatedAt;
+
+    await this.wishesRepository.update(wishId, {
+      copied: (wish.copied += 1),
+    });
+
+    const wishCopy = {
+      ...wish,
+      owner: user,
+      copied: 0,
+      raised: 0,
+      offers: [],
+    };
+
+    return await this.createWish(wishCopy, user.id);
   }
 }
