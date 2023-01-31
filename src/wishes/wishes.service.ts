@@ -43,18 +43,16 @@ export class WishesService {
   }
 
   async getLastWishes(): Promise<Wish[]> {
-    const lastWishes = await this.wishesRepository.find({
-      take: 50,
+    return await this.wishesRepository.find({
+      take: 40,
       order: { createdAt: 'desc' },
       relations: ['owner', 'offers'],
     });
-
-    return lastWishes;
   }
 
   async getTopWishes(): Promise<Wish[]> {
     return await this.wishesRepository.find({
-      take: 10,
+      take: 20,
       order: { copied: 'desc' },
       relations: ['owner', 'offers'],
     });
@@ -63,7 +61,14 @@ export class WishesService {
   async findById(id: number): Promise<Wish> {
     const wish = await this.wishesRepository.findOne({
       where: { id },
-      relations: ['owner', 'offers'],
+      relations: [
+        'owner',
+        'offers',
+        'offers.user',
+        'offers.user.wishes',
+        'offers.user.offers',
+        // 'offers.user.wishlists',
+      ],
     });
 
     if (!wish) {
@@ -94,6 +99,14 @@ export class WishesService {
 
     await this.wishesRepository.update(wishId, dto);
 
+    return {};
+  }
+
+  async updateWishRaised(
+    wishId: number,
+    raised: number,
+  ): Promise<Record<string, never>> {
+    await this.wishesRepository.update(wishId, { raised });
     return {};
   }
 

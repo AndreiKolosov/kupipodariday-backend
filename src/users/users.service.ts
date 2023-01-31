@@ -1,4 +1,3 @@
-import { NotFoundException } from '@nestjs/common/exceptions';
 import { HashService } from './../hash/hash.service';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -7,10 +6,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { Wish } from 'src/wishes/entities/wish.entity';
-import {
-  USER_ALREADY_EXIST,
-  USER_DOES_NOT_EXIST,
-} from 'src/utils/constants/users';
+import { USER_ALREADY_EXIST } from 'src/utils/constants/users';
 
 @Injectable()
 export class UsersService {

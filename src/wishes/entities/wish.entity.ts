@@ -54,6 +54,7 @@ export class Wish {
 
   @Column({
     type: 'numeric',
+    precision: 10,
     scale: 2,
   })
   @IsNumber()
@@ -61,6 +62,7 @@ export class Wish {
 
   @Column({
     type: 'numeric',
+    precision: 10,
     scale: 2,
     default: 0,
   })
