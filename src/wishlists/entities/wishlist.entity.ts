@@ -1,4 +1,4 @@
-import { IsDate, IsString, Min, Max } from 'class-validator';
+import { IsDate, IsString, Min, Max, IsUrl } from 'class-validator';
 import { User } from 'src/users/entities/user.entity';
 import { Wish } from 'src/wishes/entities/wish.entity';
 import {
@@ -31,11 +31,14 @@ export class Wishlist {
   @Max(250)
   name: string;
 
-  @Column()
+  @Column({ default: '' })
   @IsString()
-  @Min(1)
   @Max(1500)
   description: string;
+
+  @Column()
+  @IsUrl()
+  image: string;
 
   @ManyToOne(() => User, (user) => user.wishlists)
   owner: User;

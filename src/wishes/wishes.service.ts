@@ -2,7 +2,7 @@ import { NotFoundException } from '@nestjs/common/exceptions';
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsersService } from 'src/users/users.service';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { CreateWishDto } from './dto/create-wish.dto';
 import { UpdateWishDto } from './dto/update-wish.dto';
 import { Wish } from './entities/wish.entity';
@@ -27,6 +27,12 @@ export class WishesService {
     });
 
     return wishes;
+  }
+
+  async findManyByIdArr(idArr: number[]): Promise<Wish[]> {
+    return this.wishesRepository.find({
+      where: { id: In(idArr) },
+    });
   }
 
   async createWish(

@@ -1,5 +1,5 @@
 import { TransformWishOffersInterceptor } from './../interceptors/transform-wish-offers-inreceptor';
-import { TransformWishOwnerInterceptor } from '../interceptors/transform-wish-owner-interceptor';
+import { TransformOwnerInterceptor } from '../interceptors/transform-owner-interceptor';
 import {
   Controller,
   Get,
@@ -39,20 +39,20 @@ export class WishesController {
   }
 
   @Get('last')
-  @UseInterceptors(TransformWishOwnerInterceptor)
+  @UseInterceptors(TransformOwnerInterceptor<Wish[]>)
   async getLastWishes(): Promise<Wish[]> {
     return await this.wishesService.getLastWishes();
   }
 
   @Get('top')
-  @UseInterceptors(TransformWishOwnerInterceptor)
+  @UseInterceptors(TransformOwnerInterceptor<Wish[]>)
   async getTopWishes(): Promise<Wish[]> {
     return await this.wishesService.getTopWishes();
   }
 
   @Get(':id')
   @UseGuards(JwtGuard)
-  @UseInterceptors(TransformWishOwnerInterceptor)
+  @UseInterceptors(TransformOwnerInterceptor<Wish[]>)
   @UseInterceptors(TransformWishOffersInterceptor)
   async getWishById(@Param('id') id: string): Promise<Wish> {
     return await this.wishesService.findById(Number(id));
@@ -70,7 +70,7 @@ export class WishesController {
 
   @Delete(':id')
   @UseGuards(JwtGuard)
-  @UseInterceptors(TransformWishOwnerInterceptor)
+  @UseInterceptors(TransformOwnerInterceptor<Wish>)
   async deleteWish(
     @Req() { user }: { user: User },
     @Param('id') id: string,

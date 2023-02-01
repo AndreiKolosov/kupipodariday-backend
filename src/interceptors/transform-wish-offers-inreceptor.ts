@@ -20,9 +20,6 @@ export class TransformWishOffersInterceptor implements NestInterceptor {
 
         for (const offer of wish.offers as Offer[]) {
           delete offer.user.password;
-          if (offer.hidden) {
-            delete offer.amount;
-          }
         }
 
         return wish;

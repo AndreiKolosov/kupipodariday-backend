@@ -1,7 +1,4 @@
-import { TransformPublicUserInterceptor } from './../interceptors/transform-public-user-interceptor';
-import { TransformWishOwnerInterceptor } from './../interceptors/transform-wish-owner-interceptor';
 import { User } from 'src/users/entities/user.entity';
-import { TransformPrivetUserInterceptor } from '../interceptors/transform-privet-user-interceptor';
 import { Wish } from './../wishes/entities/wish.entity';
 import {
   Controller,
@@ -19,6 +16,9 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { USER_DOES_NOT_EXIST } from 'src/utils/constants/users';
+import { TransformOwnerInterceptor } from 'src/interceptors/transform-owner-interceptor';
+import { TransformPrivetUserInterceptor } from 'src/interceptors/transform-privet-user-interceptor';
+import { TransformPublicUserInterceptor } from 'src/interceptors/transform-public-user-interceptor';
 
 @Controller('users')
 @UseGuards(JwtGuard)
@@ -51,7 +51,7 @@ export class UsersController {
   }
 
   @Get('me/wishes')
-  @UseInterceptors(TransformWishOwnerInterceptor)
+  @UseInterceptors(TransformOwnerInterceptor<Wish[]>)
   async getAuthUserWishes(@Req() { user }: { user: User }): Promise<Wish[]> {
     return await this.usersService.getUserWishes(Number(user.id));
   }
@@ -69,7 +69,7 @@ export class UsersController {
   }
 
   @Get(':username/wishes')
-  @UseInterceptors(TransformWishOwnerInterceptor)
+  @UseInterceptors(TransformOwnerInterceptor<Wish[]>)
   async getUserWishes(@Param('username') username: string): Promise<Wish[]> {
     const user = await this.usersService.findByUsername(username);
 
