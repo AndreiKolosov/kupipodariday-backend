@@ -1,3 +1,4 @@
+import { TransformWishOffersInterceptor } from './../interceptors/transform-wish-offers-inreceptor';
 import { TransformWishOwnerInterceptor } from '../interceptors/transform-wish-owner-interceptor';
 import {
   Controller,
@@ -52,6 +53,7 @@ export class WishesController {
   @Get(':id')
   @UseGuards(JwtGuard)
   @UseInterceptors(TransformWishOwnerInterceptor)
+  @UseInterceptors(TransformWishOffersInterceptor)
   async getWishById(@Param('id') id: string): Promise<Wish> {
     return await this.wishesService.findById(Number(id));
   }
