@@ -26,10 +26,10 @@ export class WishesController {
   @UseGuards(JwtGuard)
   @Post()
   async createWish(
-    @Req() req: { user: User },
+    @Req() { user }: { user: User },
     @Body() dto: CreateWishDto,
   ): Promise<Record<string, never>> {
-    return await this.wishesService.createWish(dto, req.user.id);
+    return await this.wishesService.createWish(dto, user);
   }
 
   @Get()
@@ -84,6 +84,6 @@ export class WishesController {
     @Req() { user }: { user: User },
     @Param('id') id: string,
   ): Promise<Record<string, never>> {
-    return await this.wishesService.copyWish(Number(id), user.id);
+    return await this.wishesService.copyWish(Number(id), user);
   }
 }

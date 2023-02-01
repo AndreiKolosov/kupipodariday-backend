@@ -5,8 +5,6 @@ import {
 } from '@nestjs/common/exceptions';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
-import { UsersService } from 'src/users/users.service';
-import { USER_DOES_NOT_EXIST } from 'src/utils/constants/users';
 import {
   USER_NOT_OWNER,
   WISHLIST_NOT_FOUND,
@@ -22,7 +20,6 @@ export class WishlistsService {
   constructor(
     @InjectRepository(Wishlist)
     private readonly wishlistsRepository: Repository<Wishlist>,
-    private readonly usersService: UsersService,
     private readonly wishesService: WishesService,
   ) {}
 

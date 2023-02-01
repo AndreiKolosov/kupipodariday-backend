@@ -24,8 +24,8 @@ export class OffersController {
   }
 
   @Get(':id')
-  async findOffersById(@Param('id') id: number): Promise<Offer> {
-    return await this.offersService.findById(id);
+  async findOffersById(@Param('id') id: string): Promise<Offer> {
+    return await this.offersService.findById(Number(id));
   }
 
   @Post()
@@ -33,6 +33,6 @@ export class OffersController {
     @Body() dto: CreateOfferDto,
     @Req() { user }: { user: User },
   ): Promise<Offer> {
-    return await this.offersService.createOffer(dto, user.id);
+    return await this.offersService.createOffer(dto, user);
   }
 }

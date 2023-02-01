@@ -6,12 +6,12 @@ import { In, Repository } from 'typeorm';
 import { CreateWishDto } from './dto/create-wish.dto';
 import { UpdateWishDto } from './dto/update-wish.dto';
 import { Wish } from './entities/wish.entity';
-import { USER_DOES_NOT_EXIST } from 'src/utils/constants/users';
 import {
   RAISED_NOT_NULL,
   USER_NOT_OWNER,
   WISH_NOT_FOUND,
 } from 'src/utils/constants/wishes';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class WishesService {
@@ -37,9 +37,8 @@ export class WishesService {
 
   async createWish(
     dto: CreateWishDto,
-    ownerId: number,
+    user: User,
   ): Promise<Record<string, never>> {
-    const user = await this.usersService.findById(ownerId);
     await this.wishesRepository.save({
       ...dto,
       owner: user,
@@ -73,7 +72,7 @@ export class WishesService {
         'offers.user',
         'offers.user.wishes',
         'offers.user.offers',
-        // 'offers.user.wishlists',
+        'offers.user.wishlists',
       ],
     });
 
@@ -131,20 +130,11 @@ export class WishesService {
     return wish;
   }
 
-  async copyWish(
-    wishId: number,
-    userId: number,
-  ): Promise<Record<string, never>> {
+  async copyWish(wishId: number, user: User): Promise<Record<string, never>> {
     const wish = await this.wishesRepository.findOneBy({ id: wishId });
 
     if (!wish) {
       throw new NotFoundException(WISH_NOT_FOUND);
-    }
-
-    const user = await this.usersService.findById(userId);
-
-    if (!user) {
-      throw new NotFoundException(USER_DOES_NOT_EXIST);
     }
 
     delete wish.id;
@@ -163,6 +153,8 @@ export class WishesService {
       offers: [],
     };
 
-    return await this.createWish(wishCopy, user.id);
+    await this.createWish(wishCopy, user);
+
+    return {};
   }
 }

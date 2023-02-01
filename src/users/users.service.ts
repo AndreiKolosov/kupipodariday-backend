@@ -47,15 +47,15 @@ export class UsersService {
     const user = await this.findById(id);
 
     if (dto.email && dto.email !== user.email) {
-      const foundedUserByEmail = await this.findByEmail(dto.email);
-      if (foundedUserByEmail) {
+      const emailMatches = await this.findByEmail(dto.email);
+      if (emailMatches) {
         throw new BadRequestException(USER_ALREADY_EXIST);
       }
     }
 
     if (dto.username && dto.username !== user.username) {
-      const foundedUserByUsername = await this.findByUsername(dto.username);
-      if (foundedUserByUsername) {
+      const usernameMatches = await this.findByUsername(dto.username);
+      if (usernameMatches) {
         throw new BadRequestException(USER_ALREADY_EXIST);
       }
     }
@@ -64,11 +64,16 @@ export class UsersService {
       dto.password = await this.hashService.hash(dto.password);
     }
 
-    await this.usersRepository.update(id, dto);
+    const newUserData: User = {
+      ...user,
+      password: dto?.password,
+      email: dto?.email,
+      about: dto?.about,
+      username: dto?.username,
+      avatar: dto?.avatar,
+    };
 
-    const updatedUser = await this.findById(id);
-
-    return updatedUser;
+    return await this.usersRepository.save(newUserData);
   }
 
   async getUserWishes(id: number): Promise<Wish[]> {

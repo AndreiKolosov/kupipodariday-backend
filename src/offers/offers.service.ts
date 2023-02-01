@@ -4,13 +4,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import {
   OFFER_NOT_FOUND,
   RAISED_EXCEEDS_PRICE,
   WISH_OWNER_CAN_NOT_PAY,
 } from 'src/utils/constants/offer';
-import { USER_DOES_NOT_EXIST } from 'src/utils/constants/users';
 import { WISH_NOT_FOUND } from 'src/utils/constants/wishes';
 import { WishesService } from 'src/wishes/wishes.service';
 import { Repository } from 'typeorm';
@@ -46,15 +46,7 @@ export class OffersService {
     return offer;
   }
 
-  async createOffer(dto: CreateOfferDto, userId: number): Promise<Offer> {
-    const user = await this.usersService.findById(userId);
-
-    if (!user) {
-      throw new NotFoundException(USER_DOES_NOT_EXIST);
-    }
-
-    delete user.password;
-
+  async createOffer(dto: CreateOfferDto, user: User): Promise<Offer> {
     const wish = await this.wishesService.findById(dto.itemId);
 
     if (!wish) {
