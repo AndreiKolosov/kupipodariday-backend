@@ -1,3 +1,4 @@
+import { TransformWishOffersInterceptor } from './../interceptors/transform-wish-offers-inreceptor';
 import { User } from 'src/users/entities/user.entity';
 import { Wish } from './../wishes/entities/wish.entity';
 import {
@@ -52,6 +53,7 @@ export class UsersController {
 
   @Get('me/wishes')
   @UseInterceptors(TransformOwnerInterceptor<Wish[]>)
+  @UseInterceptors(TransformWishOffersInterceptor)
   async getAuthUserWishes(@Req() { user }: { user: User }): Promise<Wish[]> {
     return await this.usersService.getUserWishes(Number(user.id));
   }
@@ -70,6 +72,7 @@ export class UsersController {
 
   @Get(':username/wishes')
   @UseInterceptors(TransformOwnerInterceptor<Wish[]>)
+  @UseInterceptors(TransformWishOffersInterceptor)
   async getUserWishes(@Param('username') username: string): Promise<Wish[]> {
     const user = await this.usersService.findByUsername(username);
 

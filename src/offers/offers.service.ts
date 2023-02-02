@@ -5,7 +5,6 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
-import { UsersService } from 'src/users/users.service';
 import {
   OFFER_NOT_FOUND,
   RAISED_EXCEEDS_PRICE,
@@ -23,12 +22,13 @@ export class OffersService {
   constructor(
     @InjectRepository(Offer)
     private readonly offersRepository: Repository<Offer>,
-    private readonly usersService: UsersService,
     private readonly wishesService: WishesService,
   ) {}
 
   async findAll(): Promise<Offer[]> {
-    return await this.offersRepository.find({ relations: ['item', 'user'] });
+    return await this.offersRepository.find({
+      relations: ['item', 'user'],
+    });
   }
 
   async findById(id: number): Promise<Offer> {
@@ -46,7 +46,10 @@ export class OffersService {
     return offer;
   }
 
-  async createOffer(dto: CreateOfferDto, user: User): Promise<Offer> {
+  async createOffer(
+    dto: CreateOfferDto,
+    user: User,
+  ): Promise<Record<string, never>> {
     const wish = await this.wishesService.findById(dto.itemId);
 
     if (!wish) {
@@ -74,6 +77,8 @@ export class OffersService {
       item: wish,
     });
 
-    return this.offersRepository.save(createdOffer);
+    this.offersRepository.save(createdOffer);
+
+    return {};
   }
 }

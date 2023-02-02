@@ -40,12 +40,14 @@ export class WishesController {
 
   @Get('last')
   @UseInterceptors(TransformOwnerInterceptor<Wish[]>)
+  @UseInterceptors(TransformWishOffersInterceptor)
   async getLastWishes(): Promise<Wish[]> {
     return await this.wishesService.getLastWishes();
   }
 
   @Get('top')
   @UseInterceptors(TransformOwnerInterceptor<Wish[]>)
+  @UseInterceptors(TransformWishOffersInterceptor)
   async getTopWishes(): Promise<Wish[]> {
     return await this.wishesService.getTopWishes();
   }

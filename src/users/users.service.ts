@@ -72,14 +72,23 @@ export class UsersService {
       username: dto?.username,
       avatar: dto?.avatar,
     };
+    await this.usersRepository.update(user.id, newUserData);
 
-    return await this.usersRepository.save(newUserData);
+    return await this.findById(id);
   }
 
   async getUserWishes(id: number): Promise<Wish[]> {
     return this.wishesRepository.find({
       where: { owner: { id } },
-      relations: ['owner', 'offers'],
+      relationLoadStrategy: 'join',
+      relations: [
+        'owner',
+        'offers',
+        'offers.user',
+        'offers.user.wishes',
+        'offers.user.offers',
+        'offers.user.wishlists',
+      ],
     });
   }
 

@@ -15,14 +15,23 @@ export class TransformWishOffersInterceptor implements NestInterceptor {
     next: CallHandler,
   ): Observable<any> | Promise<Observable<any>> {
     return next.handle().pipe(
-      map((wish: Wish | undefined) => {
-        if (wish === undefined) return;
+      map((data: Wish | Wish[] | undefined) => {
+        if (data === undefined) return;
 
-        for (const offer of wish.offers as Offer[]) {
-          delete offer.user.password;
+        if (Array.isArray(data)) {
+          data.map((wishItem) => {
+            for (const offer of wishItem.offers as Offer[]) {
+              delete offer.user.password;
+            }
+            return wishItem;
+          });
+        } else {
+          for (const offer of data.offers as Offer[]) {
+            delete offer.user.password;
+          }
         }
 
-        return wish;
+        return data;
       }),
     );
   }

@@ -19,7 +19,7 @@ export class OffersController {
   constructor(private readonly offersService: OffersService) {}
 
   @Get()
-  async getAllOffers() {
+  async getAllOffers(): Promise<Offer[]> {
     return this.offersService.findAll();
   }
 
@@ -32,7 +32,7 @@ export class OffersController {
   async createOffer(
     @Body() dto: CreateOfferDto,
     @Req() { user }: { user: User },
-  ): Promise<Offer> {
+  ): Promise<Record<string, never>> {
     return await this.offersService.createOffer(dto, user);
   }
 }

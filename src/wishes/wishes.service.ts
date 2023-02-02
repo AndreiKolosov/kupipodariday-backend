@@ -51,7 +51,14 @@ export class WishesService {
     return await this.wishesRepository.find({
       take: 40,
       order: { createdAt: 'desc' },
-      relations: ['owner', 'offers'],
+      relations: [
+        'owner',
+        'offers',
+        'offers.user',
+        'offers.user.wishes',
+        'offers.user.offers',
+        'offers.user.wishlists',
+      ],
     });
   }
 
@@ -59,7 +66,14 @@ export class WishesService {
     return await this.wishesRepository.find({
       take: 20,
       order: { copied: 'desc' },
-      relations: ['owner', 'offers'],
+      relations: [
+        'owner',
+        'offers',
+        'offers.user',
+        'offers.user.wishes',
+        'offers.user.offers',
+        'offers.user.wishlists',
+      ],
     });
   }
 
@@ -94,7 +108,7 @@ export class WishesService {
       throw new NotFoundException(WISH_NOT_FOUND);
     }
 
-    if (wish.raised) {
+    if (wish.raised > 0) {
       throw new BadRequestException(RAISED_NOT_NULL);
     }
 
