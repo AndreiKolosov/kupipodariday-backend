@@ -1,8 +1,8 @@
 {
   "name": "kupipodariday-backend",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "Бэкэнд для сервиса вишлистов",
+  "author": "Андрей Колосов",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
