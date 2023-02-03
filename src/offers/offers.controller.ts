@@ -1,3 +1,4 @@
+import { ThrottlerGuard } from '@nestjs/throttler';
 import {
   Controller,
   Get,
@@ -13,8 +14,9 @@ import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { Offer } from './entities/offer.entity';
 import { User } from 'src/users/entities/user.entity';
 
-@UseGuards(JwtGuard)
 @Controller('offers')
+@UseGuards(JwtGuard)
+@UseGuards(ThrottlerGuard)
 export class OffersController {
   constructor(private readonly offersService: OffersService) {}
 

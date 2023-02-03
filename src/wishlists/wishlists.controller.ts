@@ -1,3 +1,4 @@
+import { ThrottlerGuard } from '@nestjs/throttler';
 import {
   Controller,
   Post,
@@ -18,8 +19,9 @@ import { TransformOwnerInterceptor } from 'src/interceptors/transform-owner-inte
 import { Wishlist } from './entities/wishlist.entity';
 import { UpdateWishlistDto } from './dto/update-wishlist.dto';
 
-@UseGuards(JwtGuard)
 @Controller('wishlistlists')
+@UseGuards(JwtGuard)
+@UseGuards(ThrottlerGuard)
 export class WishlistsController {
   constructor(private readonly wishlistsService: WishlistsService) {}
 
