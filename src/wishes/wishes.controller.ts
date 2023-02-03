@@ -18,8 +18,10 @@ import { UpdateWishDto } from './dto/update-wish.dto';
 import { Wish } from './entities/wish.entity';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { User } from 'src/users/entities/user.entity';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
 @Controller('wishes')
+@UseGuards(ThrottlerGuard)
 export class WishesController {
   constructor(private readonly wishesService: WishesService) {}
 

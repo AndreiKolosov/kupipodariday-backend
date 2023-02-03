@@ -1,3 +1,4 @@
+import { ThrottlerGuard } from '@nestjs/throttler';
 import { TransformWishOffersInterceptor } from './../interceptors/transform-wish-offers-inreceptor';
 import { User } from 'src/users/entities/user.entity';
 import { Wish } from './../wishes/entities/wish.entity';
@@ -23,6 +24,7 @@ import { TransformPublicUserInterceptor } from 'src/interceptors/transform-publi
 
 @Controller('users')
 @UseGuards(JwtGuard)
+@UseGuards(ThrottlerGuard)
 @UseInterceptors(TransformPrivetUserInterceptor)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
